@@ -9,7 +9,6 @@
     $ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
     $ make
     $ sudo make install
-<<<<<<< HEAD
     '''
 2. setup peak-can
     '''
@@ -22,6 +21,3 @@
     $ sudo systemctl start rc-local
     $ sudo systemctl enable rc-local
     '''
-=======
-    ```
->>>>>>> 3d0f9ed72429b47b573c147699c9ed6b187a8a9a
