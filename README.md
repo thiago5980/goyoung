@@ -47,13 +47,13 @@
     
     동작 저장 완료 시, 다음 사진과 같이 파일이 저장됨을 볼 수 있음(저장 경로는 goyoung_motion pkg의 save_file 폴더에 앞서 지정한 이름으로 저장됨)
 
-![yaml_exe](https://github.com/user-attachments/assets/6276bd27-f480-42e6-b3fb-dea2201d5fc8)
+    ![yaml_exe](https://github.com/user-attachments/assets/6276bd27-f480-42e6-b3fb-dea2201d5fc8)
 
     만약 모터 저장 값(모터 9개-(right_motor 1~4, left_motor 1~4, chest))에 모터<->로봇간 연결 불안정성으로 인해 데이터가 0으로 표시 될 때, 앞선 동작 재 저장을 수행해야 함.
 
     mode의 경우 LED 모드 변경 용으로 수기로 yaml 파일에 입력을 해야 함. 동작 mode 숫자는 다음과 같음
     
-![led](https://github.com/user-attachments/assets/3d4c347b-b9c4-465d-a459-9a3d458a8e8f)
+    ![led](https://github.com/user-attachments/assets/3d4c347b-b9c4-465d-a459-9a3d458a8e8f)
 
 
 3. 모션 구동 시간을 설정하는 화면 (최초 화면에서 모션 시간 저장 버튼 클릭)
