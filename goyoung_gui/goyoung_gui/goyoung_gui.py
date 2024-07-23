@@ -34,7 +34,7 @@ class WindowClass(QMainWindow, form_class):
         super().__init__()
         self.ros_node_wrapper = ros_node_wrapper
         self.is_main_window = is_main_window
-        self.debug = self.ros_node_wrapper.node.debug
+        self.debug = self.ros_node_wrapper.node.debug # debug 모드에 따라 로봇의 표정 동작 여부 결정 (True: 모션 저장 및 테스트 GUI 실행, False: 표정 동작 O)
         self.gui_full_screen = self.ros_node_wrapper.node.gui_full_screen
         print("Debug mode:", self.debug)
         self.initUI()

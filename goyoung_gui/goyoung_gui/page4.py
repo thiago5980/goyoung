@@ -27,7 +27,7 @@ class FifthWindow(QDialog, form_thirdwindow):
         self.addAction(self.toggle_fullscreen)
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_frame)
-        self.cap = cv2.VideoCapture("/home/goyoung/ros2_ws/src/Goyoung/goyoung_gui/data/basic.mp4")
+        self.cap = cv2.VideoCapture("/home/goyoung/ros2_ws/src/Goyoung/goyoung_gui/data/basic.mp4") # default video
         self.timer.start(30)  # 30 ms 간격으로 프레임 업데이트
         mode = Mode()
         mode.mode = 3
@@ -61,14 +61,14 @@ class FifthWindow(QDialog, form_thirdwindow):
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
     @pyqtSlot(int)
-    def change_video(self, video_number):
+    def change_video(self, video_number): # gui ROS2 Node에서 받아온 video_number에 따라 video 변경
         video_files = {
-            0: "/home/goyoung/ros2_ws/src/Goyoung/goyoung_gui/data/basic.mp4",
+            0: "/home/goyoung/ros2_ws/src/Goyoung/goyoung_gui/data/basic.mp4", # video number에 따른 경로 설정
             1: "/home/goyoung/ros2_ws/src/Goyoung/goyoung_gui/data/on.mp4",
             2: "/home/goyoung/ros2_ws/src/Goyoung/goyoung_gui/data/smile.mp4",
             3: "/home/goyoung/ros2_ws/src/Goyoung/goyoung_gui/data/off.mp4",
         }
-        self.video_path = video_files.get(video_number, "/home/goyoung/ros2_ws/src/Goyoung/goyoung_gui/data/basic.mp4")
+        self.video_path = video_files.get(video_number, "/home/goyoung/ros2_ws/src/Goyoung/goyoung_gui/data/basic.mp4") 
         self.cap.release()
         self.cap = cv2.VideoCapture(self.video_path)
         self.timer.start(30)

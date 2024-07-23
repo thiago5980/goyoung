@@ -15,9 +15,9 @@ using namespace std::placeholders;
 class TcpNode : public rclcpp::Node
 {
 public:
-    TcpNode() : Node("tcp_node")
+    TcpNode() : Node("tcp_node") 
     {
-        if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+        if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) // TCP 통신을 위한 socket 생성
         {
             perror("socket failed");
             exit(EXIT_FAILURE);
@@ -28,9 +28,12 @@ public:
             exit(EXIT_FAILURE);
         }
 
-        address.sin_family = AF_INET;
-        address.sin_addr.s_addr = INADDR_ANY;
-        address.sin_port = htons(PORT);
+        address.sin_family = AF_INET;   // socket 생성 후 bind를 통해 해당 socket에 IP주소와 PORT번호를 할당
+        
+        address.sin_addr.s_addr = INADDR_ANY;   // IP주소는 INADDR_ANY로 설정하여 모든 IP주소에서 접속 가능하도록 함
+        
+        address.sin_port = htons(PORT);     // PORT번호는 12345로 설정
+        
 
         if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
         {
@@ -43,16 +46,21 @@ public:
             exit(EXIT_FAILURE);
         }
 
-        auto qos_profile = rclcpp::QoS(rclcpp::KeepLast(10));
-        publisher = this->create_publisher<goyoung_msgs::msg::Mode>("robot_motion_mode", qos_profile);
-        origin_publisher = this->create_publisher<goyoung_msgs::msg::Mode>("back_origin", qos_profile);
-        video_publisher = this->create_publisher<std_msgs::msg::Int8>("change_video", qos_profile);
-        tcp_execution();
+        auto qos_profile = rclcpp::QoS(rclcpp::KeepLast(10));   
+        publisher = this->create_publisher<goyoung_msgs::msg::Mode>("robot_motion_mode", qos_profile);  // 로봇의 모션 모드를 publish하기 위한 publisher
+        origin_publisher = this->create_publisher<goyoung_msgs::msg::Mode>("back_origin", qos_profile); // 로봇의 원점으로 복귀하는 모드를 publish하기 위한 publisher
+        video_publisher = this->create_publisher<std_msgs::msg::Int8>("change_video", qos_profile);   // 비디오 모드를 publish하기 위한 publisher
+
+        
+        tcp_execution();    // tcp_execution 함수 실행
+    
     }
     ~TcpNode()
     {
-        close(new_socket);
-        close(server_fd);
+        close(new_socket);  // socket을 닫음
+        
+        close(server_fd);   // server_fd를 닫음
+    
     }
 
 private:
@@ -74,7 +82,7 @@ private:
     {
         while (rclcpp::ok())
         {
-            if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
+            if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)   // 클라이언트의 접속을 기다림
             {
                 perror("accept");
                 exit(EXIT_FAILURE);
@@ -82,10 +90,10 @@ private:
             bool tcp_activate = true;
             while (rclcpp::ok() && tcp_activate)
             {
-                int valread = read(new_socket, buffer, 1024);
+                int valread = read(new_socket, buffer, 1024);   // 클라이언트로부터 Data를 읽음
                 if (valread == 0)
                 {
-                    close(new_socket);
+                    close(new_socket); // 클라이언트와의 연결을 끊음
                     break;
                 }
                 else if (valread < 0)
@@ -103,9 +111,9 @@ private:
                 data = data.substr(0, data.find("\n"));
                 
                 int8_t mode = 0;
-                if (data == "IN")
-                {
-                    mode = 0;
+                if (data == "IN") // 태블릿 PC에서 전송하는 Data에 따른 mode값 설정, 해당 부분은 실제 로봇 버전과 달라졌으니 유의 바람
+                {                 // 해당 값을 통해 로봇 모션, 음성, 비디오 모드를 설정 함
+                    mode = 0;    
                 }
                 else if (data == "A1")
                 {
@@ -162,13 +170,13 @@ private:
 
                 if (mode == 0 || 8)
                 {
-                    origin_publisher->publish(robot_mode);
+                    origin_publisher->publish(robot_mode);  // 로봇의 원점으로 복귀하는 모드를 실행하기 위해 해당 모드를 publish함
                 }
 
-                publisher->publish(robot_mode);
-                video_publisher->publish(video_mode);
-
-                
+                publisher->publish(robot_mode);             // 로봇 모션 모드를 publish함
+               
+                video_publisher->publish(video_mode);       // 비디오 모드를 publish함
+               
                 send(new_socket, buffer, strlen(buffer), 0);
 
             }

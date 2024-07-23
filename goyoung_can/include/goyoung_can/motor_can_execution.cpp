@@ -30,21 +30,23 @@ class CanNode : public rclcpp::Node
 public:
     CanNode() : Node("can_node_init")
     {
-        this->declare_parameter("debug", false);
+        this->declare_parameter("debug", false); // debug mode에 따라 모션 생성 시퀀스로 실행할지 아니면 로봇 구동 시퀀스로 실행할지 여부 결정
         this->debug = this->get_parameter("debug").as_bool();
         if (this->debug)
             RCLCPP_INFO(this->get_logger(), "Debug Mode");
         else
             RCLCPP_INFO(this->get_logger(), "Release Mode");
 
-        s = socket(PF_CAN, SOCK_RAW, CAN_RAW); 
+        s = socket(PF_CAN, SOCK_RAW, CAN_RAW); // CAN 통신을 위한 socket 생성
         if (s < 0) {
             perror("Socket");
             return;
         }
 
-        strcpy(ifr.ifr_name, "can0");
-        ioctl(s, SIOCGIFINDEX, &ifr);
+        strcpy(ifr.ifr_name, "can0"); // can0 인터페이스를 사용
+        
+        ioctl(s, SIOCGIFINDEX, &ifr); // ifr 구조체를 통해 can0 인터페이스의 인덱스를 가져옴
+
 
         addr.can_family = AF_CAN;
         addr.can_ifindex = ifr.ifr_ifindex;
@@ -53,16 +55,20 @@ public:
             perror("Bind");
             return;
         }
-        configure_socket_timeout(s, 50);
+        configure_socket_timeout(s, 50); // socket timeout 설정
+
+        
         auto qos_profile = rclcpp::QoS(rclcpp::KeepLast(10));
         
-        motor_toque_srv = this->create_service<goyoung_msgs::srv::Motortorque>("motor_torque", 
+        motor_toque_srv = this->create_service<goyoung_msgs::srv::Motortorque>("motor_torque", // 모터 토크를 on/off하기 위한 서비스
+            
             std::bind(&CanNode::motor_toque_callback, this, _1, _2));
-        motor_pub = this->create_publisher<goyoung_msgs::msg::Robot>("motor_record", rclcpp::SensorDataQoS());
-        initial_motor_pub = this->create_publisher<goyoung_msgs::msg::Robot>("initial_motor_state", rclcpp::SensorDataQoS());
-        motor_sub = this->create_subscription<goyoung_msgs::msg::Robot>("start_motion", rclcpp::SensorDataQoS(), 
+        motor_pub = this->create_publisher<goyoung_msgs::msg::Robot>("motor_record", rclcpp::SensorDataQoS()); // 모터값을 publish하기 위한 publisher
+        initial_motor_pub = this->create_publisher<goyoung_msgs::msg::Robot>("initial_motor_state", rclcpp::SensorDataQoS()); // 초기 모터값을 publish하기 위한 publisher
+        
+        motor_sub = this->create_subscription<goyoung_msgs::msg::Robot>("start_motion", rclcpp::SensorDataQoS(),  // 모터값을 subscribe 
                                                                 std::bind(&CanNode::motor_callback, this, _1));
-        mode_sub_ = this->create_subscription<goyoung_msgs::msg::Mode>("mode", qos_profile, std::bind(&CanNode::mode_callback, this, _1));
+        mode_sub_ = this->create_subscription<goyoung_msgs::msg::Mode>("mode", qos_profile, std::bind(&CanNode::mode_callback, this, _1)); // 모션 모드를 subscribe
 
         // timer_ = this->create_wall_timer(100ms, std::bind(&CanNode::timer_callback, this));
         
@@ -121,19 +127,21 @@ private:
     {
         while(rclcpp::ok())
         {
-            if (torque_on && ((robot_mode == 2) || !this->debug))
+            if (torque_on && ((robot_mode == 2) || !this->debug)) // yaml파일에 저장된 모터 값을 goyoung motion node에서 받아와 로봇을 구동
             {
                 for (int i=0; i<LENGTH; i++)
                 {
                     // std::cout << "motor execute\n";
                     // int16_t speed_data = static_cast<int16_t>(600); // setting speed 300
-                    int16_t speed_data = static_cast<int16_t>(600);
-                    float motorAngle = 0.0;
+                    int16_t speed_data = static_cast<int16_t>(600); // setting speed
+                    float motorAngle = 0.0; // motor angle
+                    
 
                     if (i==0) // chest
                     {
-                        motorAngle = this->motor_msg.chest;
-                        speed_data = static_cast<int16_t>(this->motor_msg.chest_v); 
+                        motorAngle = this->motor_msg.chest; // subscribe한 모터 angle 값
+                        speed_data = static_cast<int16_t>(this->motor_msg.chest_v); // subscribe한 모터 speed 값
+                    
                     }
                     else if (i==1) // left m1
                     {
@@ -189,7 +197,7 @@ private:
                     int32_t s_data = static_cast<int32_t>(motorAngle * 100);
                     std::memcpy((s_frame.data + 4), &s_data, 4);
 
-                    if (write(s, &s_frame, sizeof(s_frame)  ) != sizeof(s_frame))
+                    if (write(s, &s_frame, sizeof(s_frame)  ) != sizeof(s_frame)) // motor에 명령어 전달
                     {
                         perror("Write Error in get motor data");
                         close(s);
@@ -233,9 +241,8 @@ private:
                     }
                     rclcpp::sleep_for(std::chrono::milliseconds(3));
                 }
-                if (led_flag)
+                if (led_flag) // LED 제어를 위한 명령어 전달
                 {
-                    // RCLCPP_INFO(this->get_logger(), "led mode : %d", led_mode);
                     struct can_frame l_frame;
                     l_frame.can_dlc = 8;
                     l_frame.can_id = 0x100;
@@ -247,11 +254,6 @@ private:
                     l_frame.data[5] = 0x00;
                     l_frame.data[6] = 0x00;
                     l_frame.data[7] = 0x00;
-                    // if (write(s, &l_frame, sizeof(l_frame)) != sizeof(l_frame))
-                    // {
-                    //     perror("Write Error in get motor data");
-                    //     return;
-                    // }
                     if (write(s, &l_frame, sizeof(l_frame)  ) != sizeof(l_frame))
                     {
                         perror("Write Error in get motor data");
@@ -275,7 +277,7 @@ private:
                     led_flag = false;
                 }
             }
-            else if(torque_off && robot_mode == 1)
+            else if(torque_off && robot_mode == 1) // 모션 저장을 위한 sequnece
             {
                 auto message = goyoung_msgs::msg::Robot();
                 for (int i = 0; i<LENGTH; i++)
@@ -291,7 +293,7 @@ private:
                     s_frame.data[5] = 0x00;
                     s_frame.data[6] = 0x00;
                     s_frame.data[7] = 0x00;
-                    if (write(s, &s_frame, sizeof(s_frame)  ) != sizeof(s_frame))
+                    if (write(s, &s_frame, sizeof(s_frame)  ) != sizeof(s_frame)) // 모터 값을 읽어오는 명령어 전달
                     {
                         perror("Write Error in get motor data");
                         close(s);
@@ -335,7 +337,7 @@ private:
                     }
                     rclcpp::sleep_for(std::chrono::milliseconds(3));
                     
-                    if (r_frame.can_id == static_cast<canid_t>(m_id[i]))
+                    if (r_frame.can_id == static_cast<canid_t>(m_id[i])) // 읽어온 데이터를 가공
                     {
                         int64_t m_data = 0;
                         bool isNegative = r_frame.data[1] & 0x80;
@@ -360,7 +362,7 @@ private:
                         motorAngle = static_cast<float>(m_data) * 0.01f;
                         // std::cout << "Motor Angle : " << motorAngle << std::endl;
                     }
-                    if (i==0) // chest
+                    if (i==0) // chest                      읽어온 데이터를 message에 저장
                         message.chest = motorAngle;
                     else if (i==1) // left m1
                         message.left.m1 = motorAngle;
@@ -381,14 +383,14 @@ private:
                     rclcpp::sleep_for(std::chrono::milliseconds(3));
                     // RCLCPP_INFO(this->get_logger(), "motor data : %f", motorAngle);
                 }
-                motor_pub->publish(message);
+                motor_pub->publish(message);    // 읽어온 데이터를 goyougn motion record 노드에 전달
                 rclcpp::sleep_for(std::chrono::milliseconds(3));
 
                 // std::cout << "publish motor data\n";
             }
             else
             {
-                if (motor_torque_off == false)
+                if (motor_torque_off == false) // 로봇 구동을 위해 torque값을 on/off하기 위한 명령어 전달
                 {
                     std::cout << "torque off/on is not set\n";
                     for(int i=0; i<LENGTH; i++)

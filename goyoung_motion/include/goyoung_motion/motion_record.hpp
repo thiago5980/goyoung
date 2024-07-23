@@ -26,7 +26,7 @@ public:
     : Node("motion_record")
     {
         auto qos_profile = rclcpp::QoS(rclcpp::KeepLast(10));
-        motor_subscription_ = this->create_subscription<goyoung_msgs::msg::Robot>(
+        motor_subscription_ = this->create_subscription<goyoung_msgs::msg::Robot>( // 로봇의 모터값을 subscribe하기 위한 subscription
           "motor_record",
           rclcpp::SensorDataQoS(),
           std::bind(&MotionRecord::motor_cb_message, this, _1));
@@ -37,12 +37,12 @@ public:
           std::bind(&MotionRecord::check_point_cb_message, this, _1));
 #endif // __version1__
 
-        motion_check_point_sub = this->create_subscription<goyoung_msgs::msg::Checkpoint>(
+        motion_check_point_sub = this->create_subscription<goyoung_msgs::msg::Checkpoint>( // GUI 상에서 클릭된 버트값을 받아와 해당 모터 값을 배열에 저장하는 subscription
           "motion_checkpoint",
           qos_profile,
           std::bind(&MotionRecord::motion_cb_checkpoint, this, _1));
         
-        save_service_ = this->create_service<goyoung_msgs::srv::Motionexecute>(
+        save_service_ = this->create_service<goyoung_msgs::srv::Motionexecute>( // 로봇의 모터값을 저장하기 위한 서비스 (yaml 파일로 저장)
           "motion_save",
           std::bind(&MotionRecord::save_file_srv_cb, this, _1, _2));
 
@@ -55,17 +55,16 @@ private:
         this->save_flag_ = false;
         this->seconds_ = 0.0;
     }
-    void motor_cb_message(const goyoung_msgs::msg::Robot::SharedPtr msg)
+    void motor_cb_message(const goyoung_msgs::msg::Robot::SharedPtr msg) // CAN node에서 받아온 로봇의 모터값을 저장
     {
         this->robot_state_ = *msg;
     }
-    void motion_cb_checkpoint(const goyoung_msgs::msg::Checkpoint::SharedPtr msg)
+    void motion_cb_checkpoint(const goyoung_msgs::msg::Checkpoint::SharedPtr msg) // GUI 상에서 클릭된 버트값을 받아와 해당 모터 값을 배열에 저장
     {
-        std::cout << "checkpoint" << std::endl;
         if (msg->check == true)
             this->record_state_.push_back(this->robot_state_);
     }
-    void save_file_srv_cb(const goyoung_msgs::srv::Motionexecute::Request::SharedPtr request,
+    void save_file_srv_cb(const goyoung_msgs::srv::Motionexecute::Request::SharedPtr request, // yaml 파일로 저장하는 서비스
                            goyoung_msgs::srv::Motionexecute::Response::SharedPtr response)
     {
         auto file_name = request->file;
@@ -75,7 +74,7 @@ private:
         else
             response->success = false;
     }
-    bool save_yml_file(const std::string filename)
+    bool save_yml_file(const std::string filename) // yaml 파일로 저장 (GUI상에서 입력된 파일명으로 저장) - 저장 위치는 해당 pkg안의 save_file 폴더에 저장
     {
         std::cout << "save file" << std::endl;
         if (filename.empty() || record_state_.empty()) 

@@ -29,7 +29,7 @@ public:
 
 private:
     rclcpp::Subscription<goyoung_msgs::msg::Mode>::SharedPtr sub_mode;
-    void mode_callback(const goyoung_msgs::msg::Mode::SharedPtr msg)
+    void mode_callback(const goyoung_msgs::msg::Mode::SharedPtr msg) // 태블릿에서 넘어온 mode에 따라 로봇의 음성 파일의 실행
     {
         if (first_flag)
             first_flag = false;
@@ -96,7 +96,7 @@ private:
             end_flag = false;
         }
         
-        if (!music.openFromFile(file_name.c_str())) { // OGG 파일 경로
+        if (!music.openFromFile(file_name.c_str())) { 
             std::cout << "Could not open file" << std::endl;
             return;
         }
@@ -121,7 +121,7 @@ private:
     }
 
     
-    void audio_exe()
+    void audio_exe() // 해당 함수의 경우 로봇에 장착되어 있는 코드는 변경되어 있으니 유의 바람
     {
         while (rclcpp::ok())
         {
@@ -130,24 +130,8 @@ private:
             if (start_flag)
             {
                 start_flag = false;
-                audio_play(file_name);
+                audio_play(file_name); // 저장된 file_name에 따라 음성 파일을 실행
             }
         }
-        // sf::Music music;
-        // if (!music.openFromFile("/home/goyoung/test/fromis_9.wav")) { // OGG 파일 경로
-        //     std::cout << "Could not open file" << std::endl;
-        //     return;
-        // }
-
-        // music.play();
-
-        // // 음악이 끝날 때까지 대기
-        // while (music.getStatus() == sf::Music::Playing) 
-        // {
-        //     sf::sleep(sf::milliseconds(100));
-        //     std::cout << "Playing..." << std::endl;
-        // }
-
-        // std::cout << "Playback finished." << std::endl;
     }
 };

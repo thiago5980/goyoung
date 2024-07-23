@@ -17,6 +17,7 @@
 using namespace std::chrono_literals;
 using namespace std::chrono;
 
+// can 통신 시 초기 세팅을 위한 명령어 (만약 로봇 동작이 원할하게 이루어지지 않을 경우 실행)
 // sudo modprobe peak_usb
 // sudo ip link set can0 up type can bitrate 1000000
 // sudo ifconfig can0 up

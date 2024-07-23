@@ -41,25 +41,15 @@ public:
     MotionExecute()
     : Node("motion_execute")
     {
-        // start_motion.left.m1 = 0.0;
-        // start_motion.left.m2 = 0.0;
-        // start_motion.left.m3 = 0.0;
-        // start_motion.left.m4 = 0.0;
-        // start_motion.right.m1 = 0.0;
-        // start_motion.right.m2 = 0.0;
-        // start_motion.right.m4 = 0.0;
-        // start_motion.chest = 0.0;
-
-        motor_subscription_ = this->create_subscription<goyoung_msgs::msg::Robot>(
+        motor_subscription_ = this->create_subscription<goyoung_msgs::msg::Robot>(  // motor state를 받아오는 subscriber
           "initial_motor_state",
           rclcpp::SensorDataQoS(),
           std::bind(&MotionExecute::motor_cb_message, this, _1));
-        motion_publisher_ = this->create_publisher<goyoung_msgs::msg::Robot>("start_motion", rclcpp::SensorDataQoS());
-        // video_publisher_ = this->create_publisher<std_msgs::msg::Int8>("change_video", rclcpp::SensorDataQoS());
-        motion_service_ = this->create_service<goyoung_msgs::srv::Motionexecute>(
+        motion_publisher_ = this->create_publisher<goyoung_msgs::msg::Robot>("start_motion", rclcpp::SensorDataQoS());  // motor state를 publish하는 publisher
+        motion_service_ = this->create_service<goyoung_msgs::srv::Motionexecute>(   // motion 실행을 위한 service
           "motion_path",
           std::bind(&MotionExecute::motion_cb_message, this, _1, _2));
-        end_pose_subscriber_ = this->create_subscription<goyoung_msgs::msg::Checkpoint>(
+        end_pose_subscriber_ = this->create_subscription<goyoung_msgs::msg::Checkpoint>(    // end pose를 받아오는 subscriber (현재는 사용하지 않음)
           "end_pose",
           rclcpp::SensorDataQoS(),
           std::bind(&MotionExecute::end_pose_cb_message, this, _1));
@@ -71,27 +61,17 @@ private:
         // RCLCPP_INFO(this->get_logger(), "end_pose");
     }
     
-    void motor_cb_message(const goyoung_msgs::msg::Robot::SharedPtr msg)
+    void motor_cb_message(const goyoung_msgs::msg::Robot::SharedPtr msg)    // motor state를 받아오는 subscriber callback
     {
         this->robot_state_ = *msg;
-        // std::cout << "motor state" << std::endl;
-        // std::cout << "left motor1: " << this->robot_state_.left.m1 << std::endl;
-        // std::cout << "left motor2: " << this->robot_state_.left.m2 << std::endl;
-        // std::cout << "left motor3: " << this->robot_state_.left.m3 << std::endl;
-        // std::cout << "left motor4: " << this->robot_state_.left.m4 << std::endl;
-        // std::cout << "right motor1: " << this->robot_state_.right.m1 << std::endl;
-        // std::cout << "right motor2: " << this->robot_state_.right.m2 << std::endl;
-        // std::cout << "right motor3: " << this->robot_state_.right.m3 << std::endl;
-        // std::cout << "right motor4: " << this->robot_state_.right.m4 << std::endl;
-        // std::cout << "chest: " << this->robot_state_.chest << std::endl;
         is_start = true;
     }
-    void motion_cb_message(const goyoung_msgs::srv::Motionexecute::Request::SharedPtr request,
+    void motion_cb_message(const goyoung_msgs::srv::Motionexecute::Request::SharedPtr request,  // motion 실행을 위한 service callback
                            goyoung_msgs::srv::Motionexecute::Response::SharedPtr response)
     {
         // RCLCPP_INFO(this->get_logger(), "motion start");
         std::cout << "motion start" << std::endl;
-        this->readMotionfile(request->file);
+        this->readMotionfile(request->file);    // motion file을 읽어오는 함수(모션의 각 state와 각 state의 시간을 읽어옴-형식은 yaml)
         if (is_start == false)
         {
             std::cerr << "Error: initial_motor_state is empty" << std::endl;
@@ -100,9 +80,7 @@ private:
 
         else
         {
-            // auto future = std::async(std::launch::async, &MotionExecute::motion_start, this, request->file);
-            // auto send = future.get();
-            auto send = this->motion_start(request->file);
+            auto send = this->motion_start(request->file);   // motion 실행 함수
             RCLCPP_INFO(this->get_logger(), "motion end");
             record_state.clear();
             start_time.clear();
@@ -114,7 +92,6 @@ private:
 
     bool motion_start(std::string filename)
     {
-        // std::cout << record_state.size() << " " << start_time.size() << " " << end_time.size() << std::endl;
         if (record_state.empty() || start_time.empty() || end_time.empty())
         {
             std::cerr << "Error: record_state or start_time or end_time is empty" << std::endl;
@@ -124,7 +101,8 @@ private:
 
         auto start = std::chrono::steady_clock::now();
         auto send_motion = goyoung_msgs::msg::Robot();
-        
+
+        // 처음 모션 실행 전 위치 값과 이후 모션 실행 값의 차이를 이용하여 각 모터의 속도를 계산
         send_motion.left.m1_v = static_cast<int16_t>((abs(record_state[0].left.m1 - this->robot_state_.left.m1))/end_time[0]);
         send_motion.left.m2_v = static_cast<int16_t>((abs(record_state[0].left.m2 - this->robot_state_.left.m2))/end_time[0]);
         send_motion.left.m3_v = static_cast<int16_t>((abs(record_state[0].left.m3 - this->robot_state_.left.m3))/end_time[0]);
@@ -144,26 +122,13 @@ private:
         send_motion.right.m4 = record_state[0].right.m4;
         send_motion.chest = record_state[0].chest;
         send_motion.num = record_state[0].num;
-        ////// bull shit state ///// origin state is 2-state
-        // if (filename == "origin.yaml")
-        // {
-        //     send_motion.left.m1_v = 0;
-        //     send_motion.left.m2_v = 0;
-        // }
-        // ////// bull shit state /////
-        // auto v_msg = std_msgs::msg::Int8();
-        // v_msg.data = send_motion.num;
-        // this->video_publisher_->publish(v_msg);
-        this->motion_publisher_->publish(send_motion);
-        while ((std::chrono::steady_clock::now() - start < std::chrono::milliseconds(static_cast<int>(end_time[0] * 1000))) && rclcpp::ok())
+        this->motion_publisher_->publish(send_motion); // 모터 속도와 위치값을 publish(CAN 통신을 통해 모터를 제어하는 노드에 전달)
+        while ((std::chrono::steady_clock::now() - start < std::chrono::milliseconds(static_cast<int>(end_time[0] * 1000))) && rclcpp::ok()) // 해당 시간동안 기다
         {
-            // rclcpp::spin_some(this->get_node_base_interface());
-            // std::cout << "in wait\n";
             rclcpp::sleep_for(std::chrono::milliseconds(interval));
-            // std::this_thread::sleep_for(interval);
         }
         
-        for (unsigned int i=1; i<start_time.size(); i++)
+        for (unsigned int i=1; i<start_time.size(); i++) // 이전과 동일하게 다음 모터 저장값과 현재 값의 차이를 이용하여 모터 속도 계산
         {
             send_motion.left.m1_v = static_cast<int16_t>((abs(record_state[i].left.m1 - record_state[i-1].left.m1))/(end_time[i] - start_time[i]));
             send_motion.left.m2_v = static_cast<int16_t>((abs(record_state[i].left.m2 - record_state[i-1].left.m2))/(end_time[i] - start_time[i]));
@@ -187,19 +152,13 @@ private:
             this->motion_publisher_->publish(send_motion);
             while(std::chrono::steady_clock::now() - start < std::chrono::milliseconds(static_cast<int>(end_time[i] * 1000)) && rclcpp::ok())
             {
-                // rclcpp::spin_some(this->get_node_base_interface());
                 rclcpp::sleep_for(std::chrono::milliseconds(interval));
             }
-            // if (end_pose)
-            // {
-            //     end_pose = false;
-            //     break;
-            // }
         }
         return true;
     }
 
-    bool readMotionfile(std::string filename)
+    bool readMotionfile(std::string filename)   // motion file을 읽어오는 함수 (LED의 경우 새로운 버전에서는 있으나 현재 버전에서는 없음)
     {
         auto home = std::filesystem::path(std::getenv("HOME"));
         auto filepath = home / filename;
@@ -250,7 +209,7 @@ private:
 
     std::string addTimeToFilename(const std::string& original) {
         std::string result = original;
-        size_t pos = result.rfind(".yaml"); // 파일 확장자 시작 부분 찾기
+        size_t pos = result.rfind(".yaml");
         if (pos != std::string::npos) {
             result.insert(pos, "_time");
         }
@@ -266,10 +225,12 @@ private:
     goyoung_msgs::msg::Robot start_motion;
     bool is_start = false;
 
-    rclcpp::Publisher<goyoung_msgs::msg::Robot>::SharedPtr motion_publisher_;
+    rclcpp::Publisher<goyoung_msgs::msg::Robot>::SharedPtr motion_publisher_;  // motion을 publish하는 publisher
+    
     // rclcpp::Publisher<std_msgs::msg::Int8>::SharedPtr video_publisher_;
-    rclcpp::Service<goyoung_msgs::srv::Motionexecute>::SharedPtr motion_service_;
-    rclcpp::Subscription<goyoung_msgs::msg::Robot>::SharedPtr motor_subscription_;
+    rclcpp::Service<goyoung_msgs::srv::Motionexecute>::SharedPtr motion_service_;  // motion 실행을 위한 service
+
+    rclcpp::Subscription<goyoung_msgs::msg::Robot>::SharedPtr motor_subscription_; // motor state를 받아오는 subscriber
     
     rclcpp::Subscription<goyoung_msgs::msg::Checkpoint>::SharedPtr end_pose_subscriber_;
     const int TIME_HZ = 10;

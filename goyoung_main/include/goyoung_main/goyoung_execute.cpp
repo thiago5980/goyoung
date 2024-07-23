@@ -30,25 +30,24 @@ public:
         else
             RCLCPP_INFO(this->get_logger(), "Release Mode");
         auto qos_profile = rclcpp::QoS(rclcpp::KeepLast(10));
-        mode_sub_ = this->create_subscription<goyoung_msgs::msg::Mode>("mode", qos_profile, std::bind(&GoyoungExecute::mode_callback, this, _1));
+        mode_sub_ = this->create_subscription<goyoung_msgs::msg::Mode>("mode", qos_profile, std::bind(&GoyoungExecute::mode_callback, this, _1)); // GUI 실행에 따른 모드 변경
 #ifdef __version1
         checkpoint_pub_ = this->create_publisher<goyoung_msgs::msg::Checkpoint>("get_check_point", qos_profile);
 #endif // !__version1
-        savefile_subscription_ = this->create_subscription<goyoung_msgs::msg::Savefile>(
+        savefile_subscription_ = this->create_subscription<goyoung_msgs::msg::Savefile>( // 저장된 파일 경로를 읽어오기 위한 subscription
           "save_file",
           qos_profile,
           std::bind(&GoyoungExecute::save_file_cb_message, this, _1));
 
-        // motion_path_pub_ = this->create_publisher<goyoung_msgs::msg::Motionpath>("motion_path", qos_profile);
-        video_pub = this->create_publisher<std_msgs::msg::Int8>("change_video", qos_profile);
-        motion_execute_client_ = this->create_client<goyoung_msgs::srv::Motionexecute>("motion_path");
-        motion_save_client_ = this->create_client<goyoung_msgs::srv::Motionexecute>("motion_save");
-        motor_torque_client_ = this->create_client<goyoung_msgs::srv::Motortorque>("motor_torque");
-        motion_mode_sub = this->create_subscription<goyoung_msgs::msg::Mode>(
+        video_pub = this->create_publisher<std_msgs::msg::Int8>("change_video", qos_profile); // 현재는 사용하지 않음
+        motion_execute_client_ = this->create_client<goyoung_msgs::srv::Motionexecute>("motion_path"); // 로봇의 모션을 실행하기 위한 client
+        motion_save_client_ = this->create_client<goyoung_msgs::srv::Motionexecute>("motion_save"); // 로봇의 모션을 저장하기 위한 client
+        motor_torque_client_ = this->create_client<goyoung_msgs::srv::Motortorque>("motor_torque"); // 로봇의 모터 토크를 변경하기 위한 client
+        motion_mode_sub = this->create_subscription<goyoung_msgs::msg::Mode>( // 로봇의 모션 모드를 변경하기 위한 subscription
           "robot_motion_mode",
           qos_profile,
           std::bind(&GoyoungExecute::motion_mode_callback, this, _1));
-        back_origin_sub = this->create_subscription<goyoung_msgs::msg::Mode>(
+        back_origin_sub = this->create_subscription<goyoung_msgs::msg::Mode>( // 로봇 실행 후 원점으로 복귀하기 위한 subscription
             "back_origin",
             qos_profile,
             std::bind(&GoyoungExecute::origin_callback, this, _1));
@@ -57,30 +56,30 @@ public:
     }
 
 private:
-    void origin_callback(const goyoung_msgs::msg::Mode::SharedPtr msg)
+    void origin_callback(const goyoung_msgs::msg::Mode::SharedPtr msg) // 원점으로 복귀하기 위한 callback
     {
         RCLCPP_INFO(this->get_logger(), "Back Origin Mode: '%d'", msg->mode);
         // motion_mode = msg->mode;
         go_origin = false;
         auto _msg = goyoung_msgs::msg::Checkpoint();
         _msg.check = true;
-        end_pose_pub->publish(_msg);
+        end_pose_pub->publish(_msg); // 원점으로 복귀하기 위한 flag publish
     }
 
-    void motion_mode_callback(const goyoung_msgs::msg::Mode::SharedPtr msg)
+    void motion_mode_callback(const goyoung_msgs::msg::Mode::SharedPtr msg) // 로봇의 모션 모드를 변경하기 위한 callback
     {
         RCLCPP_INFO(this->get_logger(), "Motion Mode: '%d'", msg->mode);
         motion_mode = msg->mode;
     }
 
-    void mode_callback(const goyoung_msgs::msg::Mode::SharedPtr msg)
+    void mode_callback(const goyoung_msgs::msg::Mode::SharedPtr msg) // GUI 실행에 따른 모드 변경
     {
         RCLCPP_INFO(this->get_logger(), "Mode: '%d'", msg->mode);
         save_path = msg->file;
         robot_mode = msg->mode;
     }
     
-    void save_file_cb_message(const goyoung_msgs::msg::Savefile::SharedPtr msg)
+    void save_file_cb_message(const goyoung_msgs::msg::Savefile::SharedPtr msg) // 저장된 파일 경로를 읽어오기 위한 callback
     {
         this->end_flag = msg->save;
     }
@@ -89,16 +88,16 @@ private:
     {
         while (rclcpp::ok())
         {
-            if ((!this->debug) || (this->robot_mode == 3))
+            if ((!this->debug) || (this->robot_mode == 3)) // 로봇의 모션 모드가 3 또는 debug 모드가 아닐 경우(실제 로봇 실행 mode)
             {
-                if (!go_origin)
+                if (!go_origin) // 원점으로 복귀 되어 있지 않다면 로봇 원점으로 이동
                 {
-                    auto motor_request = std::make_shared<goyoung_msgs::srv::Motortorque::Request>();
+                    auto motor_request = std::make_shared<goyoung_msgs::srv::Motortorque::Request>(); // 로봇의 Torque on 동작 실행
                     motor_request->torquechange = true;
                     motor_request->mode = 2;
                     auto motor_future_result = motor_torque_client_->async_send_request(motor_request);
 
-                    while (rclcpp::ok())
+                    while (rclcpp::ok()) // 로봇 Torque on이 완료될 때 동안 대기
                     {
                         if (motor_future_result.wait_for(std::chrono::milliseconds(10)) == std::future_status::ready)
                             break;
@@ -110,7 +109,7 @@ private:
                     else
                         RCLCPP_ERROR(this->get_logger(), "Failed to call service");
 
-                    auto request = std::make_shared<goyoung_msgs::srv::Motionexecute::Request>();
+                    auto request = std::make_shared<goyoung_msgs::srv::Motionexecute::Request>(); // 로봇의 원점으로 이동하기 위한 서비스 요청
                     request->file = "/home/goyoung/ros2_ws/src/Goyoung/goyoung_motion/save_file/origin.yaml";
                     RCLCPP_INFO(this->get_logger(), "file name : %s", request->file.c_str());
                     auto future_result = motion_execute_client_->async_send_request(request);
@@ -131,8 +130,7 @@ private:
                 }
                 else
                 {
-                    RCLCPP_INFO(this->get_logger(), "robot motion : %d", motion_mode);
-                    
+                    RCLCPP_INFO(this->get_logger(), "robot motion : %d", motion_mode); // 이전과 동일하게 로봇의 torque on을 실행
                     auto motor_request = std::make_shared<goyoung_msgs::srv::Motortorque::Request>();
                     motor_request->torquechange = true;
                     motor_request->mode = 2;
@@ -151,18 +149,18 @@ private:
                         RCLCPP_ERROR(this->get_logger(), "Failed to call service");
                     auto request = std::make_shared<goyoung_msgs::srv::Motionexecute::Request>();
                     std::string save_path_file;
-                    if (motion_mode == 1)
+
+
+                    // 로봇의 모션 모드에 따라 실행할 모션 파일을 변경
+                    // 로봇 모션을 추가하거나 변경 시에 해당 부분을 사용하면 됨
+                    // 저장된 로봇의 경로를 save_path_file에 저장 후 모션 모드에 따라 확장
+
+                    if (motion_mode == 1) // 이전 goyoung tcp에 mode에 맞춘 실행
                     {
-                        save_path_file = "/home/goyoung/ros2_ws/src/Goyoung/goyoung_motion/save_file/test.yaml";
+                        save_path_file = "/home/goyoung/ros2_ws/src/Goyoung/goyoung_motion/save_file/test.yaml"; // mode에 맞는 모터 data 저장 파일
                         if (motion_mode == 1)
                             motion_mode = -1;
                     }
-                //     else if (motion_mode == 2)
-                //         save_path_file = "/home/goyoung/ros2_ws/src/Goyoung/goyoung_motion/save_file/hello.yaml";
-                //     else if (motion_mode == 3)
-                //         save_path_file = "/home/goyoung/ros2_ws/src/Goyoung/goyoung_motion/save_file/hello.yaml";
-                //     else if (motion_mode == 4)
-                //         save_path_file = "/home/goyoung/ros2_ws/src/Goyoung/goyoung_motion/save_file/hello.yaml";
                     else
                         save_path_file = "/home/goyoung/ros2_ws/src/Goyoung/goyoung_motion/save_file/stay.yaml"; // shake motion
                     
@@ -192,7 +190,7 @@ private:
             {
                 // RCLCPP_INFO(this->get_logger(), "Waiting for Mode");
             }
-            else if (this->robot_mode == 1)
+            else if (this->robot_mode == 1) // 로봇 모션 저장을 위한 모드
             {
                 RCLCPP_INFO(this->get_logger(), "Read Motor Data and Save Motor Data");
                 if (this->save_path.empty())
@@ -200,7 +198,7 @@ private:
                     RCLCPP_ERROR(this->get_logger(), "No Save Path");
                     return;
                 }
-                std::string save_path_file = this->save_path;
+                std::string save_path_file = this->save_path; // GUI로 부터 받은 저장 경로
                 RCLCPP_INFO(this->get_logger(), "Save Mode Execution");
 
 
@@ -268,7 +266,7 @@ private:
                     std::cerr << "Failed to call service" << std::endl;
                 this->robot_mode = 0;
             }
-            else if (this->robot_mode == 2)
+            else if (this->robot_mode == 2) // 생성한 모션을 테스트 하기 위한 모드
             {
                 if (this->save_path.empty())
                 {
@@ -276,12 +274,12 @@ private:
                     return;
                 }
                 RCLCPP_INFO(this->get_logger(), "Start Execution");
-                std::string save_path_file = this->save_path;
+                std::string save_path_file = this->save_path; // GUI로 입력한 테스트 모드 파일
 
                 auto motor_request = std::make_shared<goyoung_msgs::srv::Motortorque::Request>();
                 motor_request->torquechange = true;
                 motor_request->mode = 2;
-                auto motor_future_result = motor_torque_client_->async_send_request(motor_request);
+                auto motor_future_result = motor_torque_client_->async_send_request(motor_request); // 모션 실행
 
                 while (rclcpp::ok())
                 {
