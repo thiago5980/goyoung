@@ -1,0 +1,23 @@
+sequences:
+- action: 0
+  end_time: 1.0
+  start_time: 0.0
+- action: 1
+  end_time: 2.0
+  start_time: 1.0
+- action: 2
+  end_time: 3.0
+  start_time: 2.0
+- action: 3
+  end_time: 4.0
+  start_time: 3.0
+- action: 4
+  end_time: 5.0
+  start_time: 4.0
+- action: 5
+  end_time: 6.0
+  start_time: 5.0
+- action: 6
+  end_time: 7.0
+  start_time: 6.0
+size: 7

@@ -1,0 +1,26 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/goyoung/ros2_ws/install/goyoung_msgs/include/**",
+        "/opt/ros/humble/include/**",
+        "/home/goyoung/ros2_ws/src/Goyoung/goyoung_can/include/**",
+        "/home/goyoung/ros2_ws/src/Goyoung/goyoung_main/include/**",
+        "/home/goyoung/ros2_ws/src/Goyoung/goyoung_motion/include/**",
+        "/home/goyoung/ros2_ws/src/Goyoung/goyoung_motor/include/**",
+        "include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

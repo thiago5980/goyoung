@@ -1,0 +1,79 @@
+size: 7
+sequences:
+  - action: 0
+    left_motor1: 132.45999145507812
+    left_motor2: 244.01998901367188
+    left_motor3: 6.690000057220459
+    left_motor4: -4.4699997901916504
+    right_motor1: 99.25
+    right_motor2: 42.129997253417969
+    right_motor3: -258.41000366210938
+    right_motor4: 93.089996337890625
+    chest: 55.939998626708984
+    mode: 1
+  - action: 1
+    left_motor1: 177.65998840332031
+    left_motor2: 297.69998168945312
+    left_motor3: -226.00999450683594
+    left_motor4: -4.4699997901916504
+    right_motor1: 50.069999694824219
+    right_motor2: 42.180000305175781
+    right_motor3: 462.80999755859375
+    right_motor4: 92.959999084472656
+    chest: 17.829999923706055
+    mode: 2
+  - action: 2
+    left_motor1: 238.72999572753906
+    left_motor2: 253
+    left_motor3: -326.27999877929688
+    left_motor4: -4.4699997901916504
+    right_motor1: 57.979999542236328
+    right_motor2: 42.159999847412109
+    right_motor3: 572.19000244140625
+    right_motor4: 92.959999084472656
+    chest: -43.649997711181641
+    mode: 3
+  - action: 3
+    left_motor1: 51.590000152587891
+    left_motor2: 263.32998657226562
+    left_motor3: -91.55999755859375
+    left_motor4: -4.4699997901916504
+    right_motor1: 67.220001220703125
+    right_motor2: 42
+    right_motor3: 22.129999160766602
+    right_motor4: 93.029998779296875
+    chest: 89.569999694824219
+    mode: 5
+  - action: 4
+    left_motor1: -10.989999771118164
+    left_motor2: 216.97000122070312
+    left_motor3: 160.75
+    left_motor4: -4.4699997901916504
+    right_motor1: 34.80999755859375
+    right_motor2: 41.959999084472656
+    right_motor3: -258.44998168945312
+    right_motor4: 93.209999084472656
+    chest: 197.69000244140625
+    mode: 6
+  - action: 5
+    left_motor1: -91.769996643066406
+    left_motor2: 225.00999450683594
+    left_motor3: 214.45999145507812
+    left_motor4: -4.4699997901916504
+    right_motor1: 57.399997711181641
+    right_motor2: 40.799999237060547
+    right_motor3: -487.01998901367188
+    right_motor4: 93.089996337890625
+    chest: 270.64999389648438
+    mode: 8
+  - action: 6
+    left_motor1: 112.23999786376953
+    left_motor2: 235.81999206542969
+    left_motor3: -20.020000457763672
+    left_motor4: -4.4699997901916504
+    right_motor1: 56.129997253417969
+    right_motor2: 40.80999755859375
+    right_motor3: -51.099998474121094
+    right_motor4: 92.959999084472656
+    chest: 39.669998168945312
+    mode: 0

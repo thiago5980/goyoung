@@ -1,0 +1,12 @@
+goyoung_gui:
+  ros__parameters:
+    debug: False
+    full_screen: True
+
+goyoung_main:
+  ros__parameters:
+    debug: False
+
+goyoung_can:
+  ros__parameters:
+    debug: False

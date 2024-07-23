@@ -1,0 +1,24 @@
+size: 2
+sequences:
+  - action: 0
+    left_motor1: 114.89999389648438
+    left_motor2: 235.55999755859375
+    left_motor3: -20
+    left_motor4: -4.440000057220459
+    right_motor1: 56.110000610351562
+    right_motor2: 40.829998016357422
+    right_motor3: -51.139999389648438
+    right_motor4: 93.009994506835938
+    chest: 39.209999084472656
+    mode: 0
+  - action: 1
+    left_motor1: 114.89999389648438
+    left_motor2: 235.55999755859375
+    left_motor3: -20
+    left_motor4: -4.440000057220459
+    right_motor1: 56.110000610351562
+    right_motor2: 40.829998016357422
+    right_motor3: -51.139999389648438
+    right_motor4: 93.009994506835938
+    chest: 39.209999084472656
+    mode: 1

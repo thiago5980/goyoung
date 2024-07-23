@@ -1,0 +1,14 @@
+length: 2
+---
+motion:
+  - filename: "test.xml"
+    start_time: 1.0
+---
+motion:
+  - filename: "test2.xml"
+    start_time: 10.0
+---
+motion:
+    - filename: "test3.xml"
+      start_time: 15.0
+  

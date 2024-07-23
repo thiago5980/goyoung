@@ -1,0 +1,16 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/goyoung/ros2_ws/build/goyoung_gui",
+        "/home/goyoung/ros2_ws/install/goyoung_gui/lib/python3.10/site-packages",
+        "/home/goyoung/ros2_ws/install/goyoung_msgs/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/goyoung/ros2_ws/build/goyoung_gui",
+        "/home/goyoung/ros2_ws/install/goyoung_gui/lib/python3.10/site-packages",
+        "/home/goyoung/ros2_ws/install/goyoung_msgs/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
+}

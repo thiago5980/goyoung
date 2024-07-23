@@ -1,0 +1,8 @@
+sequences:
+- action: 0
+  end_time: 1.0
+  start_time: 0.0
+- action: 1
+  end_time: 2.0
+  start_time: 1.0
+size: 2
