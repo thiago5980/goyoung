@@ -22,7 +22,7 @@
     ```
 
 ## 로봇 소프트웨어 구조
-![graph](https://github.com/user-attachments/assets/7c14f059-065e-4177-9ffd-469d97e559c2)
+![graph](https://github.com/user-attachments/assets/84b4240f-c5c0-4ea7-a8da-18ea5b70aa42)
 
 ## 로봇 모션 저장 방법
 로봇 모션 저장을 위한 GUI를 사용하여 로봇 모션을 저장
