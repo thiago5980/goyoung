@@ -22,6 +22,9 @@
     $ sudo systemctl enable rc-local
     ```
 
+![graph](https://github.com/user-attachments/assets/7c14f059-065e-4177-9ffd-469d97e559c2)
+
+
 ## 로봇 실행
 1. 디버그 모드 해제 방법 (로봇 전원 인가 시 로봇 구동 X)
     ```
