@@ -71,8 +71,10 @@
     저장 버튼 : 위 동작이 마무리 되면 저장 버튼을 눌러서 최초 화면으로 재진입  
 
     위 동작을 마무리 했을 경우, goyoung_motion pkg의 save_file 폴더에 stay_time.yaml이라는 파일이 생성 됨.
+   
+    로봇 안정성을 고려하여 시간 설정 최소 limit은 2초 정도로 고려하여 동작 생성을 해야함.   
 
-4. 모션 테스트 작동 화면 (최초 화면에서 모션 재생 버튼 클릭)
+5. 모션 테스트 작동 화면 (최초 화면에서 모션 재생 버튼 클릭)
 ![page3](https://github.com/user-attachments/assets/12dbe85b-f6a5-4757-8f33-e091d7bea154)
 
     재생 버튼 : Play File 밑에 실행하고자 하는 모션 파일 명 (에시 : stay.yaml)을 적고 재생 버튼 클릭
@@ -81,12 +83,22 @@
 
     저장 버튼 : 동작이 마무리 되면 저장 버튼을 눌러 최초 화면으로 재진입.
 
-5. 로봇 시퀀스에 모션 동작 적용
+6. 로봇 시퀀스에 모션 동작 적용
     goyoung_main/include/goyoung_execute.cpp의 함수 execution을 수정하여 로봇 시퀀스에 모션 동작을 추가할 수 있음.
     ```
     if ((!this->debug) || (this->robot_mode == 3))
     ```
-    위 부분의 주석을 참고하여 로봇 모션 모드에 따라 실행할 모션 파일을 추가하기 바람.
+    위 부분의 주석(해당 파일 154번째 줄)을 참고하여 로봇 모션 모드에 따라 실행할 모션 파일을 추가하기 바람.
+    ```
+    if (motion_mode == 1) // 이전 goyoung tcp에 mode에 맞춘 실행
+    {
+        save_path_file = "/home/goyoung/ros2_ws/src/Goyoung/goyoung_motion/save_file/test.yaml"; // mode에 맞는 모터 data 저장 파일
+        if (motion_mode ==1)
+            motion_mode = -1;
+    }
+    ```
+    저장된 로봇 경로를 save_path_file 변수에 저장 (예시 : ~/home/goyoung/ros2_ws/src/Goyoung/goyoung_motion/save_file/test.yaml)
+    해당 부분의 경우 실제 로봇에 적용된 코드와 상이한점이 존재하여 해당 주석을 참고하여 코드 수정이 필요함
 
 ## 로봇 실행
 1. 디버그 모드 해제 방법 (로봇 전원 인가 시 로봇 구동 X)
@@ -117,4 +129,5 @@
 2. 로봇 모션 동작 저장 시, 저장된 yaml파일 값에 0이 저장되지는 않았는지 확인해야 함.
 3. 예기치 못한 상황으로 인해 로봇 초기 위치가 달라졌을 경우, 초기 위치로 이동하는 모션의 값도 수정해야 함.
 4. 만약 로봇 모션 저장 시 데이터가 올바르게 들어오지 않는 경우, 로봇 실행 3번의 명령어를 사용하여 재설정 바람
-5. 로봇 모션 저장과 같은 debug 환경에서는 로봇 실행 1번을 참고하여 bashrc 파일을 수정해야 함. 
+5. 로봇 모션 저장과 같은 debug 환경에서는 로봇 실행 1번을 참고하여 bashrc 파일을 수정해야 함.
+6. 로봇 동작 안정성을 고려하여 동작 간 시간 limit(2초 정도)을 고려하여 동작 생성 필요
